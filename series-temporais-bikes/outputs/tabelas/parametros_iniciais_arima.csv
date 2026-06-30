@@ -1,0 +1,4 @@
+﻿parâmetro,ideia,ponto_de_partida
+p,memória dos valores passados,avaliar pela PACF
+d,número de diferenciações aplicadas,1
+q,memória dos erros passados,avaliar pela ACF
