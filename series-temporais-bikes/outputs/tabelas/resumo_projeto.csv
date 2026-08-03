@@ -1,0 +1,2 @@
+﻿modelo_final,mae,rmse,mape,inicio_hitórico,fim_histórico,dias_historico,dias_teste
+"Sarimax(1,1,1)()(1,0,1,7)",908.0798819902604,1092.1541918521248,18.14170194578408,2011-01-01,2012-12-19,456,60
