@@ -318,7 +318,10 @@ def exibir_avaliacao(metricas: Mapping[str, Any] | None, erro: str | None) -> No
         ("Precision", obter(teste, "precision")),
         ("Recall", obter(teste, "recall")),
         ("F1", obter(teste, "f1")),
-        ("AP / PR-AUC", obter(teste, "pr_auc", "ap_pr_auc")),
+        (
+            "Average Precision (AP)",
+            obter(teste, "average_precision", "pr_auc", "ap_pr_auc"),
+        ),
     ]
     for coluna, (rotulo, valor) in zip(colunas, indicadores):
         coluna.metric(rotulo, formatar_decimal(valor))

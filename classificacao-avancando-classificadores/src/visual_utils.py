@@ -3,7 +3,6 @@
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-from sklearn.metrics import confusion_matrix
 
 
 CORES = {
@@ -137,16 +136,16 @@ def grafico_distribuicao_alvo(tabela, titulo="Distribuição da inadimplência")
 
 def grafico_comparacao_modelos(
     resultados,
-    titulo="PR-AUC dos modelos de referência",
-    coluna_metrica="pr_auc",
+    titulo="Average Precision dos modelos de referência",
+    coluna_metrica="average_precision",
 ):
-    """Compara os modelos pela AP/PR-AUC, com eixo de 0 a 1 para não exagerar diferenças."""
+    """Compara os modelos pela AP, com eixo de 0 a 1 para não exagerar diferenças."""
     tabela = resultados.sort_values(coluna_metrica, ascending=False)
     fig = px.bar(
         tabela,
         x="modelo",
         y=coluna_metrica,
-        labels={"modelo": "Modelo", coluna_metrica: "AP / PR-AUC"},
+        labels={"modelo": "Modelo", coluna_metrica: "Average Precision (AP)"},
     )
     fig.update_traces(
         marker_color=SEQUENCIA_CORES[: len(tabela)],
@@ -178,7 +177,7 @@ def grafico_historico_optuna(historico, titulo="Histórico dos trials"):
         hovertemplate="Trial %{x}: %{y:.4f}<extra></extra>",
     )
     fig.update_xaxes(title_text="Trial")
-    fig.update_yaxes(title_text="AP / PR-AUC")
+    fig.update_yaxes(title_text="Average Precision (AP)")
     return aplicar_layout_padrao(fig, titulo=titulo, mostrar_legenda=True)
 
 
@@ -266,12 +265,10 @@ def grafico_importancia_variaveis(
 
 
 def grafico_matriz_confusao(
-    y_verdadeiro,
-    previsoes,
+    matriz,
     titulo="Matriz de confusão no teste",
 ):
-    """Mostra a matriz de confusão com os valores absolutos em cada célula."""
-    matriz = confusion_matrix(y_verdadeiro, previsoes, labels=[0, 1])
+    """Mostra uma matriz de confusão já calculada no notebook."""
     rotulos = ["Não inadimplente", "Inadimplente"]
     fig = px.imshow(
         matriz,
