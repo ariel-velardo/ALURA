@@ -63,13 +63,7 @@ import pandas as pd
 from sklearn.compose import ColumnTransformer
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import (
-    average_precision_score,
-    confusion_matrix,
-    f1_score,
-    precision_score,
-    recall_score,
-)
+from sklearn.metrics import average_precision_score
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
@@ -140,7 +134,11 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.utils.class_weight import compute_sample_weight
 
-from src.auxiliares import COLUNAS_NOMINAIS, carregar_base_preparada
+from src.auxiliares import (
+    COLUNAS_NOMINAIS,
+    COLUNAS_STATUS,
+    carregar_base_preparada,
+)
 from src.visual_utils import grafico_metricas_por_limiar
 
 '''
@@ -210,6 +208,54 @@ LIMIAR_FINAL = 0.27
 }
 
 CELULAS_FIXAS = {
+    "03_otimizacao.ipynb": {
+        1: '''## Objetivo
+
+Um tuning curto melhora o Gradient Boosting de forma útil para a aula?
+
+Variamos quatro hiperparâmetros em 20 trials: `n_estimators`, `learning_rate`,
+`max_depth` e `subsample`. Os demais permanecem com os valores padrão do
+scikit-learn.
+''',
+        14: '''## Resultado
+
+O ganho observado é modesto. Isso é pedagogicamente útil: tuning organiza a
+busca, mas não garante salto grande. O teste continua intocado.
+''',
+    },
+    "04_desbalanceamento_threshold.ipynb": {
+        7: '''## O SMOTENC melhora o ranking?
+
+Os códigos nominais e de status de pagamento são categorias do domínio. Para
+evitar sua interpolação como valores contínuos, usamos
+`COLUNAS_NOMINAIS + COLUNAS_STATUS` como features categóricas do SMOTENC.
+''',
+        11: '''colunas_comparacao = [
+    "modelo",
+    "average_precision",
+    "precision",
+    "recall",
+    "f1",
+    "fp",
+]
+
+resultados_balanceamento[
+    colunas_comparacao
+].sort_values("average_precision", ascending=False)
+''',
+        12: '''A comparação considera o ranking probabilístico pela Average Precision e
+também o efeito em Precision, Recall e falsos positivos. Pesos elevam Recall,
+mas aumentam os falsos positivos; o SMOTENC adiciona complexidade sem melhorar
+o ranking neste experimento. Por isso, seguimos com os dados originais.
+''',
+        16: '''## Resultado
+
+O modelo com dados originais permanece como solução final. Na validação,
+avaliamos diferentes limiares e observamos o trade-off entre Precision e
+Recall. Para este projeto didático seguimos com 0,27, decisão tomada antes de
+abrir o teste. Esse valor não é universal e depende do contexto de uso.
+''',
+    },
     "06_modelo_final.ipynb": {
         9: '''previsoes_teste = (probabilidades_teste >= LIMIAR_FINAL).astype(int)
 matriz_teste = confusion_matrix(y_teste, previsoes_teste, labels=[0, 1])
@@ -218,6 +264,17 @@ fig = grafico_matriz_confusao(matriz_teste)
 fig.show()
 ''',
     },
+}
+
+NOTEBOOKS = [
+    "00_preparacao_base.ipynb",
+    *CELULAS_SETUP,
+]
+
+KERNELSPEC = {
+    "display_name": "Python 3 (.venv)",
+    "language": "python",
+    "name": "python3",
 }
 
 
@@ -232,9 +289,12 @@ def como_linhas(texto: str) -> list[str]:
 def atualizar_notebook(caderno: dict, nome: str) -> dict:
     """Atualiza apenas setup e nomenclatura, preservando células e metadados."""
     atualizado = copy.deepcopy(caderno)
-    atualizado["cells"][2]["source"] = como_linhas(CELULAS_SETUP[nome])
+    if nome in CELULAS_SETUP:
+        atualizado["cells"][2]["source"] = como_linhas(CELULAS_SETUP[nome])
     for indice, texto in CELULAS_FIXAS.get(nome, {}).items():
         atualizado["cells"][indice]["source"] = como_linhas(texto)
+
+    atualizado["metadata"]["kernelspec"] = KERNELSPEC.copy()
 
     for celula in atualizado["cells"]:
         texto = "".join(celula.get("source", []))
@@ -253,7 +313,7 @@ def atualizar_notebook(caderno: dict, nome: str) -> dict:
 def sincronizar(apenas_conferir: bool) -> list[str]:
     """Confere ou grava os notebooks e devolve os nomes desatualizados."""
     desatualizados = []
-    for nome in CELULAS_SETUP:
+    for nome in NOTEBOOKS:
         caminho = PASTA_NOTEBOOKS / nome
         caderno = json.loads(caminho.read_text(encoding="utf-8"))
         atualizado = atualizar_notebook(caderno, nome)

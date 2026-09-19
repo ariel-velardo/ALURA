@@ -80,42 +80,6 @@ def aplicar_layout_padrao(
     return fig
 
 
-def grafico_barras_padrao(
-    dados,
-    x,
-    y,
-    titulo,
-    cor=None,
-    labels=None,
-    texto=None,
-    altura=460,
-):
-    """Gráfico de barras simples, para situações diretas de exploração da base."""
-    fig = px.bar(dados, x=x, y=y, labels=labels, text=texto)
-    fig.update_traces(marker_color=cor or CORES["azul_principal"])
-    if texto is not None:
-        fig.update_traces(textposition="outside")
-    return aplicar_layout_padrao(fig, titulo=titulo, altura=altura)
-
-
-def grafico_boxplot_padrao(
-    dados,
-    y,
-    x=None,
-    titulo=None,
-    cor=None,
-    labels=None,
-    altura=460,
-):
-    """Boxplot simples, disponível para investigações pontuais da base."""
-    fig = px.box(dados, x=x, y=y, labels=labels)
-    fig.update_traces(
-        marker_color=cor or CORES["azul_principal"],
-        line=dict(color=CORES["azul_medio"]),
-    )
-    return aplicar_layout_padrao(fig, titulo=titulo, altura=altura)
-
-
 def grafico_distribuicao_alvo(tabela, titulo="Distribuição da inadimplência"):
     """Mostra quantos clientes há em cada classe do alvo, em quantidade e proporção."""
     fig = px.bar(

@@ -49,10 +49,6 @@ CONCEITOS_POR_NOTEBOOK = {
         "LogisticRegression",
         "RandomForestClassifier",
         "average_precision_score",
-        "precision_score",
-        "recall_score",
-        "f1_score",
-        "confusion_matrix",
     },
     "02_ensembles.ipynb": {
         "train_test_split",
@@ -121,6 +117,68 @@ def fontes(caderno):
 
 
 class TestRefatoracaoPedagogica(unittest.TestCase):
+    def test_kernels_sao_genericos_e_portateis(self):
+        caminhos = sorted((RAIZ / "notebooks").glob("0[0-6]_*.ipynb"))
+        esperado = {
+            "display_name": "Python 3 (.venv)",
+            "language": "python",
+            "name": "python3",
+        }
+        for caminho in caminhos:
+            kernelspec = carregar_notebook(caminho)["metadata"]["kernelspec"]
+            with self.subTest(caderno=caminho.name):
+                self.assertEqual(esperado, kernelspec)
+
+    def test_material_do_aluno_nao_revela_bastidores_ou_regras_magicas(self):
+        termos_proibidos = [
+            "prova técnica",
+            "decisão já validada",
+            "ganho esperado",
+            "min_samples_leaf",
+            "0.005",
+        ]
+        for caminho in NOTEBOOKS_AULA:
+            texto = fontes(carregar_notebook(caminho)).lower()
+            for termo in termos_proibidos:
+                with self.subTest(caderno=caminho.name, termo=termo):
+                    self.assertNotIn(termo, texto)
+
+    def test_notebook_01_nao_importa_metricas_nao_utilizadas(self):
+        caminho = RAIZ / "notebooks" / "01_problema_benchmark.ipynb"
+        caderno = carregar_notebook(caminho)
+        codigo = "\n".join(
+            "".join(celula.get("source", []))
+            for celula in caderno["cells"]
+            if celula["cell_type"] == "code"
+        )
+        arvore = ast.parse(codigo)
+        nomes_importados = {
+            alias.name
+            for no in ast.walk(arvore)
+            if isinstance(no, (ast.Import, ast.ImportFrom))
+            for alias in no.names
+        }
+        for nome in [
+            "confusion_matrix",
+            "precision_score",
+            "recall_score",
+            "f1_score",
+        ]:
+            with self.subTest(nome=nome):
+                self.assertNotIn(nome, nomes_importados)
+
+    def test_notebook_04_disponibiliza_todas_as_categorias_para_smotenc(self):
+        caminho = RAIZ / "notebooks" / "04_desbalanceamento_threshold.ipynb"
+        texto = fontes(carregar_notebook(caminho))
+        self.assertIn("COLUNAS_NOMINAIS", texto)
+        self.assertIn("COLUNAS_STATUS", texto)
+        self.assertIn("COLUNAS_NOMINAIS + COLUNAS_STATUS", texto)
+
+    def test_funcoes_visuais_sem_uso_foram_removidas(self):
+        texto = (RAIZ / "src" / "visual_utils.py").read_text(encoding="utf-8")
+        self.assertNotIn("grafico_barras_padrao", texto)
+        self.assertNotIn("grafico_boxplot_padrao", texto)
+
     def test_auxiliares_nao_importa_bibliotecas_de_modelagem(self):
         caminho = RAIZ / "src" / "auxiliares.py"
         arvore = ast.parse(caminho.read_text(encoding="utf-8"))
