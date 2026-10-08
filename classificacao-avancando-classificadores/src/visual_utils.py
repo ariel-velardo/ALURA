@@ -172,11 +172,49 @@ def grafico_importancia_hiperparametros(
     return aplicar_layout_padrao(fig, titulo=titulo, altura=400)
 
 
+def grafico_curvas_precision_recall(
+    curvas,
+    titulo="Curva Precision-Recall",
+    taxa_positiva=None,
+):
+    """Desenha curvas Precision-Recall já calculadas no notebook.
+
+    ``curvas`` é um dicionário ``{rótulo: (recall, precision)}``. A função não
+    calcula métricas: recebe os arrays prontos e apenas desenha. Se
+    ``taxa_positiva`` for informada, mostra a referência de um classificador
+    sem poder de ranking (Precision igual à proporção de positivos).
+    """
+    fig = go.Figure()
+    for cor, (rotulo, (recall, precision)) in zip(SEQUENCIA_CORES, curvas.items()):
+        fig.add_scatter(
+            x=recall,
+            y=precision,
+            mode="lines",
+            name=rotulo,
+            line=dict(color=cor, width=3),
+            hovertemplate="Recall: %{x:.3f}<br>Precision: %{y:.3f}<extra></extra>",
+        )
+    if taxa_positiva is not None:
+        fig.add_hline(
+            y=taxa_positiva,
+            line=dict(color=CORES["cinza_suave"], width=2, dash="dash"),
+            annotation_text=f"Sem poder de ranking ({taxa_positiva:.1%})",
+            annotation_position="bottom right",
+            annotation_font_color=CORES["cinza_suave"],
+        )
+    fig.update_xaxes(title_text="Recall", range=[0, 1])
+    fig.update_yaxes(title_text="Precision", range=[0, 1.02])
+    fig = aplicar_layout_padrao(fig, titulo=titulo, altura=520, mostrar_legenda=True)
+    fig.update_layout(legend=dict(orientation="v", yanchor="top", y=0.98, x=0.98, xanchor="right"))
+    return fig
+
+
 def grafico_metricas_por_limiar(
     resultados_limiares,
     titulo="Precision, Recall e F1 por limiar",
 ):
-    """Compara Precision, Recall e F1 nos limiares avaliados no projeto."""
+    """Mostra como Precision, Recall e F1 mudam ao variar o limiar."""
+    poucos_limiares = len(resultados_limiares) <= 12
     nomes = {"precision": "Precision", "recall": "Recall", "f1": "F1"}
     tabela = resultados_limiares.melt(
         id_vars="limiar",
@@ -190,12 +228,15 @@ def grafico_metricas_por_limiar(
         x="limiar",
         y="valor",
         color="metrica",
-        markers=True,
+        markers=poucos_limiares,
         labels={"limiar": "Limiar", "valor": "Métrica", "metrica": ""},
         color_discrete_map=CORES_METRICAS,
     )
     fig.update_traces(line=dict(width=3), marker=dict(size=9))
-    fig.update_xaxes(autorange="reversed", tickvals=resultados_limiares["limiar"])
+    fig.update_xaxes(autorange="reversed")
+    if poucos_limiares:
+        fig.update_xaxes(tickvals=resultados_limiares["limiar"])
+    fig.update_traces(hovertemplate="%{y:.3f}")
     fig.update_yaxes(range=[0, 1])
     fig = aplicar_layout_padrao(fig, titulo=titulo, mostrar_legenda=True)
     fig.update_layout(hovermode="x unified")
