@@ -34,7 +34,14 @@ Com o ambiente `.venv` ativado, abra os notebooks:
 python -m jupyter notebook
 ```
 
-Execute primeiro `notebooks/00_preparacao_base.ipynb`; os demais notebooks usam o arquivo preparado por ele. Para iniciar a aplicação depois de gerar o modelo final:
+Execute primeiro `notebooks/00_preparacao_base.ipynb`; os demais notebooks usam o arquivo preparado por ele. Os notebooks seguintes devem ser executados em ordem, pois cada um consome decisões salvas pelo anterior:
+
+- `01`: salva `treino.csv`, `validacao.csv` e `teste.csv`;
+- `03`: salva `models/parametros_gradient_boosting.json`, lido pelos notebooks 04, 05 e 06;
+- `04`: salva `models/limiar_decisao.json`, lido pelo notebook 06;
+- `06`: único notebook que abre o teste; salva o modelo e as métricas usados pela aplicação.
+
+Para iniciar a aplicação depois de gerar o modelo final:
 
 ```powershell
 python -m streamlit run app.py
