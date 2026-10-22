@@ -1,0 +1,27 @@
+{
+  "modelo": "Gradient Boosting otimizado",
+  "limiar": 0.27,
+  "validacao": {
+    "precison": 0.5177453027139874,
+    "recall": 0.560663149962321,
+    "f1": 0.5383502170767004,
+    "average_precision": 0.5513912847180014
+  },
+  "teste": {
+    "precision": 0.523876404494382,
+    "recall": 0.5621703089675961,
+    "f1": 0.5423482370047256,
+    "average_precision": 0.5508114181785052
+  },
+  "matriz_confusao_teste": [
+    [
+      3995,
+      678
+    ],
+    [
+      581,
+      746
+    ]
+  ],
+  "observacao": "Modelo treinado somente no treino; teste avaliado uma vez."
+}
