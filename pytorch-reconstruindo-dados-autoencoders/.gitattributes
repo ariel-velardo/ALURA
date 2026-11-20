@@ -1,0 +1,3 @@
+# Dados do curso: guardar e restaurar os CSV byte a byte, sem converter final de linha.
+# src/dados.py confere o SHA-256 dos arquivos de data/raw.
+*.csv -text
